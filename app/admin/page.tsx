@@ -64,8 +64,12 @@ export default async function AdminHome() {
           <Link key={c.label} href={c.href}>
             <Card className="transition-colors hover:border-foreground/20">
               <CardHeader>
-                <CardDescription>{c.label}</CardDescription>
-                <CardTitle className="text-2xl">{c.value}</CardTitle>
+                <CardDescription className="mono-label">
+                  {c.label}
+                </CardDescription>
+                <CardTitle className="text-2xl tabular-nums">
+                  {c.value}
+                </CardTitle>
               </CardHeader>
             </Card>
           </Link>

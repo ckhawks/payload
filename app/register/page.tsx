@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 import { getCurrentUser } from "@/lib/auth";
 import { AuthForm } from "@/components/auth-form";
+import { Brand } from "@/components/brand";
 
 export const dynamic = "force-dynamic";
 
@@ -20,8 +21,8 @@ export default async function RegisterPage() {
     <main className="flex min-h-full flex-1 items-center justify-center px-4 py-12">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <h1 className="text-2xl font-semibold tracking-tight">payload</h1>
-          <p className="text-muted-foreground mt-1 text-sm">
+          <Brand className="text-2xl" />
+          <p className="text-muted-foreground mt-2 text-sm">
             {isFirstUser
               ? "Create the admin account"
               : "Create your account with a registration code"}
