@@ -3,6 +3,7 @@ import { requireUser } from "@/lib/auth";
 import { AdminNav } from "@/components/admin-nav";
 import { LogoutButton } from "@/components/logout-button";
 import { Brand } from "@/components/brand";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Toaster } from "@/components/ui/sonner";
 
 export default async function AdminLayout({
@@ -26,6 +27,7 @@ export default async function AdminLayout({
             <span className="text-muted-foreground hidden font-mono text-[13px] sm:inline">
               {user.username}
             </span>
+            <ThemeToggle />
             <LogoutButton />
           </div>
         </div>
