@@ -31,7 +31,7 @@ export function AdminNav({ isAdmin }: { isAdmin: boolean }) {
               key={item.href}
               href={item.href}
               className={cn(
-                "rounded-md px-2.5 py-1 font-mono text-[13px] transition-colors",
+                "rounded-md px-2.5 py-1 text-[13px] transition-colors",
                 active
                   ? "bg-muted text-foreground"
                   : "text-muted-foreground hover:text-foreground",
