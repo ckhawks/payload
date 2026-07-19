@@ -3,6 +3,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { AuthForm } from "@/components/auth-form";
 import { Brand } from "@/components/brand";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { MadeBy } from "@/components/made-by";
 
 export default async function LoginPage() {
   if (await getCurrentUser()) redirect("/admin");
@@ -18,6 +19,7 @@ export default async function LoginPage() {
           </p>
         </div>
         <AuthForm mode="login" needsCode={false} />
+        <MadeBy className="mt-8" />
       </div>
     </main>
   );
