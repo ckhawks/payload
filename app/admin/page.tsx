@@ -61,8 +61,8 @@ export default async function AdminHome() {
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {cards.map((c) => (
-          <Link key={c.label} href={c.href}>
-            <Card className="transition-colors hover:border-foreground/20">
+          <Link key={c.label} href={c.href} className="group">
+            <Card className="transition-all duration-150 group-hover:-translate-y-0.5 group-hover:border-foreground/30 group-hover:bg-accent group-hover:shadow-lg">
               <CardHeader>
                 <CardDescription className="mono-label">
                   {c.label}
@@ -107,8 +107,8 @@ function QuickCard({
   desc: string;
 }) {
   return (
-    <Link href={href}>
-      <Card className="h-full transition-colors hover:border-foreground/20">
+    <Link href={href} className="group">
+      <Card className="h-full transition-all duration-150 group-hover:-translate-y-0.5 group-hover:border-foreground/30 group-hover:bg-accent group-hover:shadow-lg">
         <CardHeader>
           <CardTitle className="text-base">{title}</CardTitle>
           <CardDescription>{desc}</CardDescription>
