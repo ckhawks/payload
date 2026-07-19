@@ -17,6 +17,7 @@ const RESERVED = new Set([
   "logout",
   "api",
   "g",
+  "r",
   "_next",
   "favicon.ico",
   "robots.txt",

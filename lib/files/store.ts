@@ -19,8 +19,10 @@ export async function storeUpload(opts: {
   file: File;
   customSlug?: string;
   ownerId: string;
+  /** Set when the file arrived through a file request ("drop"). */
+  requestId?: string;
 }): Promise<StoreResult> {
-  const { file, customSlug, ownerId } = opts;
+  const { file, customSlug, ownerId, requestId } = opts;
 
   if (file.size === 0) return { ok: false, error: "Empty file." };
   if (file.size > env.MAX_UPLOAD_BYTES) {
@@ -57,6 +59,7 @@ export async function storeUpload(opts: {
     size: file.size,
     storageKey,
     ownerId,
+    requestId,
   });
 
   return { ok: true, url: `${env.APP_URL}/${slug}`, slug };

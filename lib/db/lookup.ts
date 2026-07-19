@@ -1,7 +1,7 @@
 import "server-only";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { files, links, gists } from "@/lib/db/schema";
+import { files, links, gists, fileRequests } from "@/lib/db/schema";
 
 /** Files and links share the bare "/<slug>" namespace, so check both. */
 export async function isBareSlugTaken(slug: string): Promise<boolean> {
@@ -17,6 +17,16 @@ export async function isBareSlugTaken(slug: string): Promise<boolean> {
     .where(eq(links.slug, slug))
     .limit(1);
   return Boolean(l);
+}
+
+/** File requests live under their own "/r/<slug>" namespace. */
+export async function isRequestSlugTaken(slug: string): Promise<boolean> {
+  const [r] = await db
+    .select({ id: fileRequests.id })
+    .from(fileRequests)
+    .where(eq(fileRequests.slug, slug))
+    .limit(1);
+  return Boolean(r);
 }
 
 export async function isGistSlugTaken(slug: string): Promise<boolean> {
