@@ -39,13 +39,13 @@ export function AdminNav({ isAdmin }: { isAdmin: boolean }) {
             >
               <span
                 className={cn(
-                  "mr-0.5 transition-opacity",
+                  "mr-0.5 text-base leading-none transition-opacity",
                   active ? "opacity-60" : "opacity-0",
                 )}
               >
                 ›
               </span>
-              {item.label.toLowerCase()}
+              {item.label}
             </Link>
           );
         })}

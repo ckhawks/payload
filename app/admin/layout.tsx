@@ -24,7 +24,7 @@ export default async function AdminLayout({
             <AdminNav isAdmin={user.isAdmin} />
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-muted-foreground hidden font-mono text-[13px] sm:inline">
+            <span className="text-muted-foreground hidden text-[13px] sm:inline">
               {user.username}
             </span>
             <ThemeToggle />
