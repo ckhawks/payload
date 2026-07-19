@@ -33,7 +33,7 @@ export function AdminNav({ isAdmin }: { isAdmin: boolean }) {
               className={cn(
                 "rounded-md px-2.5 py-1 text-[13px] transition-colors",
                 active
-                  ? "bg-muted text-foreground"
+                  ? "bg-muted text-foreground font-semibold"
                   : "text-muted-foreground hover:text-foreground",
               )}
             >
