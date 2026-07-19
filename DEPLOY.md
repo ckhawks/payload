@@ -7,8 +7,8 @@ running and serving on your domain.
 Placeholders used below — substitute your own:
 
 - Domain: `payload.stlr.cx`
-- App user: `payload`
-- App directory: `/srv/payload`
+- App directory: `/root/payload` (cloned into root's home, `~`)
+- Runs as: `root`
 - Internal port: `3000`
 
 ## 0. Prerequisites on the VPS
@@ -24,10 +24,10 @@ node -v   # expect v20.x
 ## 1. Get the code
 
 ```bash
-sudo mkdir -p /srv/payload && sudo chown payload:payload /srv/payload
-sudo -u payload git clone https://github.com/ckhawks/payload.git /srv/payload
-cd /srv/payload
-sudo -u payload npm ci        # clean install from package-lock
+cd ~
+git clone https://github.com/ckhawks/payload.git
+cd ~/payload
+npm ci        # clean install from package-lock
 ```
 
 Use `npm ci` (not `npm install`) on the server so the lockfile is honored
@@ -35,8 +35,8 @@ exactly.
 
 ## 2. Production environment
 
-Create `/srv/payload/.env.local` (owned by the app user, `chmod 600`). It is
-gitignored and must never be committed.
+Create `~/payload/.env.local` (`chmod 600`). It is gitignored and must never be
+committed.
 
 ```
 # Postgres — prod connects over the local socket/loopback, no SSH tunnel
@@ -69,8 +69,8 @@ AUTH_SECRET=...
 ## 3. Apply migrations
 
 ```bash
-cd /srv/payload
-sudo -u payload npm run db:migrate
+cd ~/payload
+npm run db:migrate
 ```
 
 Idempotent — safe to run on every deploy. (If dev and prod share one database,
@@ -81,7 +81,8 @@ the tables already exist; this is then a no-op.)
 Build:
 
 ```bash
-sudo -u payload npm run build
+cd ~/payload
+npm run build
 ```
 
 Create a systemd unit at `/etc/systemd/system/payload.service`:
@@ -93,11 +94,12 @@ After=network.target postgresql.service
 
 [Service]
 Type=simple
-User=payload
-WorkingDirectory=/srv/payload
-EnvironmentFile=/srv/payload/.env.local
+User=root
+WorkingDirectory=/root/payload
+EnvironmentFile=/root/payload/.env.local
 Environment=NODE_ENV=production
 Environment=PORT=3000
+# If this path is wrong, find it with: which npm
 ExecStart=/usr/bin/npm start
 Restart=on-failure
 RestartSec=5
@@ -109,9 +111,9 @@ WantedBy=multi-user.target
 Enable and start:
 
 ```bash
-sudo systemctl daemon-reload
-sudo systemctl enable --now payload
-sudo systemctl status payload          # should be active (running)
+systemctl daemon-reload
+systemctl enable --now payload
+systemctl status payload          # should be active (running)
 curl -sf http://localhost:3000/login   # local smoke test
 ```
 
@@ -152,9 +154,9 @@ server {
 Enable it and issue a certificate:
 
 ```bash
-sudo ln -s /etc/nginx/sites-available/payload /etc/nginx/sites-enabled/
-sudo nginx -t && sudo systemctl reload nginx
-sudo certbot --nginx -d payload.stlr.cx     # adds the 443 server + redirect
+ln -s /etc/nginx/sites-available/payload /etc/nginx/sites-enabled/
+nginx -t && systemctl reload nginx
+certbot --nginx -d payload.stlr.cx     # adds the 443 server + redirect
 ```
 
 Open ports 80/443 in the firewall; keep Postgres bound to localhost.
@@ -170,12 +172,12 @@ Open ports 80/443 in the firewall; keep Postgres bound to localhost.
 ## 7. Redeploying after a change
 
 ```bash
-cd /srv/payload
-sudo -u payload git pull
-sudo -u payload npm ci
-sudo -u payload npm run db:migrate     # if there are new migrations
-sudo -u payload npm run build
-sudo systemctl restart payload
+cd ~/payload
+git pull
+npm ci
+npm run db:migrate     # if there are new migrations
+npm run build
+systemctl restart payload
 ```
 
 For zero-ish downtime, build first and restart last (as above); the restart is
