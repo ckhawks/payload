@@ -50,6 +50,29 @@ EOF
 fi
 
 # ------------------------------------------------------------ sanity checks
+# The server is linux-x64/glibc. Native modules and Next's SWC binaries are
+# platform- and arch-specific, so a build from anywhere else ships an artifact
+# that fails at runtime rather than at build time.
+case "$(uname -s)" in
+  Linux) ;;
+  Darwin)
+    echo "ERROR: cannot build on macOS — it produces darwin binaries, on any chip." >&2
+    echo "Options:" >&2
+    echo "  - run deploy.sh inside a linux/amd64 Docker container" >&2
+    echo "  - ssh into a linux-x64 box and run it there" >&2
+    echo "  - use the WSL build host on SENTINEL" >&2
+    exit 1 ;;
+  *)
+    echo "ERROR: unsupported build platform '$(uname -s)'. Need linux-x64." >&2
+    exit 1 ;;
+esac
+
+if [ "$(uname -m)" != "x86_64" ]; then
+  echo "ERROR: build arch is $(uname -m), server is x86_64." >&2
+  echo "Native modules built here will not load on the server." >&2
+  exit 1
+fi
+
 case "$REPO_DIR" in
   /mnt/*)
     echo "ERROR: running from a Windows-mounted path ($REPO_DIR)." >&2
