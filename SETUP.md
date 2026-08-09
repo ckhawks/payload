@@ -3,6 +3,13 @@
 Provisioning steps for the file/gist/link-shortener site. App is a single Next.js
 app on a VPS; Postgres holds metadata; Cloudflare R2 holds file bytes.
 
+> **All of this is already provisioned** as of 2026-08-09 — the bucket, the
+> database, and the live deployment. This document is the record of how, and
+> what to redo if rebuilding from scratch. For deploying code, see `DEPLOY.md`.
+>
+> Names below are the **actual** ones in use: bucket `payload-files`, database
+> and role `payload_stlrcx`, Postgres on port **7465** (not 5432).
+
 ## Cloudflare R2 (object storage)
 
 Chosen over AWS S3 because a file host is egress-heavy and R2 has **$0 egress**
@@ -10,10 +17,10 @@ Chosen over AWS S3 because a file host is egress-heavy and R2 has **$0 egress**
 
 1. **Cloudflare dashboard → R2** (left sidebar). First use asks for a payment
    method even on the free tier.
-2. **Create bucket** → name `payload` → location hint near the VPS → Create.
-   No bucket policy needed.
+2. **Create bucket** → name `payload-files` → location hint near the VPS →
+   Create. No bucket policy needed.
 3. **Manage R2 API Tokens → Create API Token** → **Object Read & Write**, scoped
-   to the `payload` bucket → Create. Copy (shown once):
+   to the `payload-files` bucket → Create. Copy (shown once):
    - Access Key ID
    - Secret Access Key
    - Account ID (also on the R2 overview page)
@@ -26,39 +33,48 @@ so no CORS / public-access config is required. The bucket stays fully private.
 
 Reuse the existing VPS Postgres instance. One DB shared by dev + prod.
 
-Run as the `postgres` superuser via `psql`:
+**The VPS Postgres listens on port 7465, not 5432.** Connecting without `-p`
+fails with "connection refused".
+
+Run as the `postgres` superuser via `psql -p 7465`:
 
 ```sql
-CREATE DATABASE payload;
-CREATE USER payload_app WITH PASSWORD 'pick-a-strong-password';
-GRANT ALL PRIVILEGES ON DATABASE payload TO payload_app;
-\c payload
-GRANT ALL ON SCHEMA public TO payload_app;
+CREATE DATABASE payload_stlrcx;
+CREATE USER payload_stlrcx WITH PASSWORD 'pick-a-strong-password';
+GRANT ALL PRIVILEGES ON DATABASE payload_stlrcx TO payload_stlrcx;
+\c payload_stlrcx
+GRANT ALL ON SCHEMA public TO payload_stlrcx;
 ```
 
-### Connecting from a dev laptop
+### Connecting from a dev machine
 
-Prefer an **SSH tunnel** (nothing exposed publicly):
+Dev currently connects **directly over the public IP** on port 7465, which is
+why `.env.local` has a host of `216.146.25.22`. Production connects over
+loopback instead.
+
+An **SSH tunnel** exposes nothing publicly and is preferable if you are setting
+this up again:
 
 ```
-ssh -L 5432:localhost:5432 you@vps
+ssh -L 7465:localhost:7465 root@216.146.25.22
 ```
 
-Then connect locally to `localhost:5432`. Postgres stays bound to localhost.
-
-Alternative (more exposure): set `listen_addresses = '*'` in `postgresql.conf`,
-add a `scram-sha-256` line for your IP in `pg_hba.conf`, open the firewall port.
+Then point `DATABASE_URL` at `localhost:7465`.
 
 ## Environment variables
 
 Put these in `.env.local` (dev) and the server's env (prod). Never commit them.
 
+In production these live in `/root/apps/payload/shared/.env.local` (chmod 600),
+symlinked into each release — never inside the deployed artifact.
+
 ```
-DATABASE_URL=postgres://payload_app:PASSWORD@localhost:5432/payload
+# prod uses localhost; dev currently uses the public IP 216.146.25.22
+DATABASE_URL=postgres://payload_stlrcx:PASSWORD@localhost:7465/payload_stlrcx
 R2_ACCOUNT_ID=...
 R2_ACCESS_KEY_ID=...
 R2_SECRET_ACCESS_KEY=...
-R2_BUCKET=payload
+R2_BUCKET=payload-files
 R2_ENDPOINT=https://<ACCOUNT_ID>.r2.cloudflarestorage.com
 
 # Public origin used to build short URLs, e.g. https://payload.stlr.cx

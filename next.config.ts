@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Emits .next/standalone with a self-contained server.js, so the server
+  // never runs npm install or next build. public/ and .next/static are not
+  // included automatically — deploy.sh copies them in.
+  output: "standalone",
   serverExternalPackages: ["postgres"],
   experimental: {
     serverActions: {
